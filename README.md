@@ -35,5 +35,7 @@ curl http://127.0.0.1:9998/stop
 ```
 curl http://127.0.0.1:9998/status
 ```
+
 显示结果如图:
+
 ![status](https://git.oschina.net/cbwfree/FireflyDaemon/raw/master/demo/status.png)
