@@ -46,8 +46,8 @@ Config().addServer(node)
 # Gate节点
 node = ServerConfig("gate")
 node.set_log()
-node.set_db()
-node.set_reload()
+# node.set_db()
+# node.set_reload()
 node.set_root(20001)
 node.set_remote("share", "middle", "logs")
 Config().addServer(node)
@@ -55,8 +55,8 @@ Config().addServer(node)
 # Sync节点
 node = ServerConfig("sync")
 node.set_log()
-node.set_db()
-node.set_mem()
+# node.set_db()
+# node.set_mem()
 Config().addServer(node)
 
 # 创建Game节点
@@ -68,9 +68,9 @@ else:
 for cpu_id in xrange(total):
     node = ServerConfig("game", "game_%s" % (cpu_id + 1))
     node.set_log()
-    node.set_db()
-    node.set_mem()
-    node.set_reload()
+    # node.set_db()
+    # node.set_mem()
+    # node.set_reload()
     node.set_remote("gate", "share", "middle", "logs", "battle")
     if IS_BIND_CPU and sys.platform in ('win32', 'linux2'):
         node.set_cpu(cpu_id + 1)
