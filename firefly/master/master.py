@@ -17,6 +17,7 @@ from firefly.distributed.root import PBRoot,BilateralFactory
 from firefly.server.globalobject import GlobalObject
 from firefly.web.delayrequest import DelaySite
 from firefly.server.config import Config
+from firefly.utils.common import Jsonify
 
 
 if os.name != 'nt' and os.name != 'posix':
@@ -112,6 +113,13 @@ class Master:
         :return:
         """
         log.msg("*** The master in the %s launch ***" % time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(self.start_time)))
+        # 在根目录写入启动进程信息
+        process = [(os.getpid(), 'master')]
+        for name, proc in self.process.protocols.items():
+            process.append((proc.transport.pid, name))
+        with open("status.json", "w+") as f:
+            f.write(Jsonify(process))
+            f.close()
 
     def stopBefore(self):
         """

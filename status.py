@@ -6,71 +6,38 @@
 @author: cbwfree
 @create: 15/12/31 10:13
 """
-import sys, psutil, time
+import psutil, time, json
 
 
-def getServerInfo(pid):
+def GetProcess():
     """
-    获取服务器状态
+    获取进程对象列表
     :return:
     """
-    process = psutil.Process(pid)
-    result = {
-        'pid': process.pid,
-        'cwd': process.cwd(),
-        'name': process.name(),
-        'children': {}
-    }
-    process.cpu_percent(interval=None)
-    for proc in process.children():
-        proc.cpu_percent(interval=None)
-        result['children'][proc.pid] = {
-            'pid': proc.pid,
-            'cwd': proc.cwd(),
-            'name': proc.name()
-        }
-    time.sleep(1)
-    result['cpu'] = process.cpu_percent(interval=None)
-    result['mem'] = process.memory_percent()
-    result['used'] = bytes2human(process.memory_info()[0])
-    result['create'] = process.create_time()
-    result['status'] = process.status()
-    result['threads'] = process.num_threads()
-    for proc in process.children():
-        result['children'][proc.pid]['cpu'] = proc.cpu_percent(interval=None)
-        result['children'][proc.pid]['mem'] = proc.memory_percent()
-        result['children'][proc.pid]['used'] = bytes2human(proc.memory_info()[0])
-        result['children'][proc.pid]['create'] = proc.create_time()
-        result['children'][proc.pid]['status'] = proc.status()
-        result['children'][proc.pid]['threads'] = proc.num_threads()
-    content = [
-        "Name\tPID\tTIME\t\tCPU(%)\tMEM(%)\tUsed\t\tTHREADS\tSTATUS\t\tPATH",
-        "%s\t%s\t%s\t%s\t%s\t%s\t\t%s\t%s\t%s" % (
-            "master",
-            result.get("pid"),
-            formatRunTime(result.get("create")),
-            result.get("cpu"),
-            float("%.2f" % result.get("mem")),
-            result.get("used"),
-            result.get("threads"),
-            result.get("status") + ("\t" if result.get("status") == "running" else ""),
-            result.get("cwd")
-        )
-    ]
-    for cpid, proc in result.get("children", {}).items():
-        child = "%s\t%s\t%s\t%s\t%s\t%s\t\t%s\t%s\t%s"  % (
-            proc.get("name"),
-            cpid,
-            formatRunTime(proc.get("create")),
-            proc.get("cpu"),
-            float("%.2f" % proc.get("mem")),
-            proc.get("used"),
-            proc.get("threads"),
-            proc.get("status") + ("\t" if proc.get("status") == "running" else ""),
-            proc.get("cwd")
-        )
-        content.append(child)
-    return content
+    config = json.load(open("status.json", "r"))
+    return [(psutil.Process(pid), name) for pid, name in config]
+
+
+def ServerStatus(processes):
+    """
+    创建服务器状态数据
+    :param processes:
+    :return:
+    """
+    content = ["Name\tPID\tTIME\t\tCPU(%)\tMEM(%)\tUsed\t\tTHREADS\tSTATUS\t\tPATH"]
+    for proc, name in processes:
+        content.append("%s\t%s\t%s\t%s\t%s\t%s\t\t%s\t%s\t%s" % (
+            name,
+            proc.pid,
+            formatRunTime(proc.create_time()),
+            proc.cpu_percent(interval=None),
+            float("%.2f" % proc.memory_percent()),
+            bytes2human(proc.memory_info()[0]),
+            proc.num_threads(),
+            proc.status() + ("\t" if proc.status() == "running" else ""),
+            proc.cwd()
+        ))
+    return "\n".join(content)
 
 
 def formatRunTime(create):
@@ -110,46 +77,33 @@ def bytes2human(n):
     return '%.2fB' % n
 
 
-def curses_console(pid):
+if __name__ == "__main__":
     try:
         import curses
-        refresh = True
     except:
-        refresh = False
-    if refresh:
+        curses = None
+    process = GetProcess()
+    if curses:
         stdscr = curses.initscr()
         curses.start_color()
-        #文字和背景色设置，设置了两个color pair，分别为1和2
+        # 设置显示颜色为绿色
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_RED, curses.COLOR_BLACK)
         #关闭屏幕回显
         curses.noecho()
         try:
             while True:
-                result = "\n".join(getServerInfo(pid))
-                stdscr.addstr(0, 0, result, curses.color_pair(1))
+                stdscr.addstr(0, 0, ServerStatus(process), curses.color_pair(1))
                 stdscr.refresh()
-                time.sleep(0.5)
+                time.sleep(1)
         except:
             pass
         finally:
             curses.nocbreak()
             curses.echo()
             curses.endwin()
-            print "\n".join(getServerInfo(pid))
     else:
-        print "\n".join(getServerInfo(pid)) + "\n"
-
-
-if __name__ == "__main__":
-    args = sys.argv[1:]
-    if not len(args):
-        print "Please enter the need to monitor the process ID..."
-        sys.exit()
-    try:
-        ppid = int(args[0])
-    except:
-        print "The process ID must be an integer"
-        sys.exit()
-    curses_console(ppid)
+        ServerStatus(process)
+        time.sleep(1)
+    # 未安装curses和退出时显示
+    print ServerStatus(process)
 
