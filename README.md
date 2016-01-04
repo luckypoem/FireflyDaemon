@@ -11,6 +11,7 @@
 4. 主进程异常退出也可以正常保存数据
 5. 优化了配置文件定义方式,在firefly.server.config下新增Config配置管理模块
 6. 停止服务端时,主进程会等待子进程全部退出后再退出.避免重复启动多个实例
+7. 各子进程输出日志会带有进程前缀信息, 方便查找问题
 
 ## FireFlayDaemon 的依赖:
 FireFlayDaemon的依赖和firefly基本相同，只是多了psutil(扩展WEB管理接口,增加进程状态监控)包
