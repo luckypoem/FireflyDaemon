@@ -184,6 +184,7 @@ class ServerConfig:
         self.netport = 0
         self.rootport = 0
         self.webport = 0
+        self.wsport = 0
         self.remote = []
 
     @property
@@ -207,7 +208,7 @@ class ServerConfig:
         """
         attr = {'name': self.node}
         for key, val in self.__dict__.items():
-            if val and key not in ['name','remote', 'node']:
+            if val and key not in ['name', 'remote', 'node']:
                 attr[key] = val
         if self.remote:
             attr['remoteport'] = self.remoteList
@@ -272,6 +273,14 @@ class ServerConfig:
         :return:
         """
         self.webport = port
+
+    def set_ws(self, port):
+        """
+        启用WebSocket
+        :param port:
+        :return:
+        """
+        self.wsport = port
 
     def set_remote(self, *remote):
         """

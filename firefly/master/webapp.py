@@ -7,7 +7,7 @@ Created on 2013-8-7
 from twisted.web import resource
 from twisted.internet import reactor
 from firefly.server.globalobject import GlobalObject
-from firefly.utils.common import Jsonify
+from firefly.utils.common import Jsonify, ToUtf8
 from status import getServerInfo, buildConsoleResult
 
 root = GlobalObject().webroot
@@ -92,3 +92,4 @@ class ServerStatus(resource.Resource):
         else:
             result = buildConsoleResult(serverInfo)
         return result
+

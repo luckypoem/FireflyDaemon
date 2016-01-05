@@ -67,19 +67,18 @@ class LiberateProtocol(protocol.Protocol):
                     break
                 self.buff = self.buff[length+rlength:]
                 d = self.factory.doDataReceived(self,command,request)
-                if not d:
+                if d is None:
                     continue
                 d.addCallback(self.safeToWriteData,command)
                 d.addErrback(DefferedErrorHandle)
 
-            
-        
     def dataReceived(self, data):
         '''数据到达处理
         @param data: str 客户端传送过来的数据
         '''
         self.datahandler.send(data)
-            
+
+
 class LiberateFactory(protocol.ServerFactory):
     '''协议工厂'''
     

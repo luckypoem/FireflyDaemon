@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+    <head>
+    </head>
+    <body>
+        <button onclick='connect();'>连接服务器</button>
+        <button onclick='disconnect();'>断开连接</button>
+        <div>
+            <input type="number" id="command" name="command" value="10000" required>
+            <input type="text" id="content" name="content" value="" placeholder="消息内容" required>
+            <button onclick='sendMessage();'>发送消息</button>
+        </div>
+        <div id="console"></div>
+        <script type="text/javascript">
+        var socket = null;
+        var isOpen = false;
+        var $ = function(el){return document.querySelector(el)};
+        var log = function(msg){
+            var p = document.createElement("p");
+            p.appendChild(document.createTextNode(msg));
+            $("#console").appendChild(p);
+        };
+        var connect = function() {
+            if( isOpen && socket ){
+                return;
+            }
+            socket = new WebSocket("ws://127.0.0.1:21000");
+            socket.bufferBlob = new Blob();
+            socket.binaryType = "arraybuffer";
+            socket.onopen = function() {
+                log("Connected!");
+                isOpen = true;
+            };
+            socket.onmessage = function(e) {
+                // 接收服务器返回的消息
+                var _this = this;
+                var buf = e.data;
+                // 创建读取对象
+                var blobRead = new FileReader();
+                // 将本次获取到的数据与之前剩余的数据合并
+                _this.bufferBlob = new Blob([_this.bufferBlob, buf]);
+                // 读取数据成功后调用
+                blobRead.onload = function(e){
+                    ParseArrayBuffer(e.target.result);
+                };
+                // 将Blob对象的数据读取为ArrayBuffer
+                blobRead.readAsArrayBuffer(_this.bufferBlob);
+
+                // 解析消息数据
+                function ParseArrayBuffer(buf){
+                    // 解析消息头
+                    var head = ParseBufferHead(buf.slice(0, 8));
+                    if( ! head.status ){
+                        // 数据异常
+                        console.log("illegal data package --", head.error);
+                        return
+                    }
+                    var command = head['command'];
+                    var length = head['length'];
+                    var dataLen = 8 + length;
+                    var request = new Blob([buf.slice(8, dataLen)]);
+                    console.log(head);
+                    if( request.size < length ){
+                        // 数据包不完整, 留待后续处理
+                        console.log(command, "Data is not complete, waiting for the data ...");
+                        return;
+                    }
+                    // 开始解析字符串数据
+                    _this.bufferBlob = new Blob([buf.slice(dataLen)]);
+                    var f = new FileReader();
+                    f.onload = function (e) {
+                        // 获得最终数据
+                        log("Receiver Message, command: "+command+", data: "+ e.target.result);
+                    };
+                    f.readAsText(request);
+                    if( _this.bufferBlob.size ){
+                        // 如果有粘包, 则继续解析消息数据
+                        blobRead.readAsArrayBuffer(_this.bufferBlob);
+                    }
+                }
+
+                // 解析消息头
+                function ParseBufferHead(buf){
+                    var result = {};
+                    try {
+                        // 创建ArrayBuffer的视图对象
+                        var head = new DataView(buf);
+                        result = {
+                            status: true,
+                            length: head.getUint32(0),
+                            command: head.getUint32(4)
+                        };
+                    }catch (e){
+                        result = {
+                            status: false,
+                            error: e.message
+                        }
+                    }
+                    return result;
+                }
+            };
+            socket.onclose = function(e) {
+                log("Connection closed.");
+                socket = null;
+                isOpen = false;
+            }
+        };
+        var disconnect = function(){
+            if( isOpen && socket ){
+                socket.close();
+            }
+        };
+        var sendMessage = function() {
+            if (isOpen) {
+                var command = parseInt($("#command").value);
+                if( isNaN(command) ){
+                    alert("协议号只能为整数");
+                    return;
+                }
+                var msg = {data: $("#content").value};
+                var str = JSON.stringify(msg);
+                // 将中文字符串转换为unicode字符, 避免无法写入二进制数据的问题
+                str = str.replace(/[^\u0000-\u00FF]/g, function($0){
+                    return escape($0).replace(/(%u)(\w{4})/gi,"\\u$2");
+                });
+
+                // 创建字符串二进制数据
+                var body = new Blob([str]);
+                var length = body.size;
+
+                // 创建协议头数据
+                var head = new DataView(new ArrayBuffer(8));
+                head.setUint32(0, length);
+                head.setUint32(4, command);
+
+                // 将Blob转化为ArrayBuffer
+                var f = new FileReader();
+                f.onload = function(e){
+                    // 发送二进制消息
+                    socket.send(e.target.result);
+                    log("Send Message, command: "+command+", data: " + str);
+                };
+                // 将Blob大二进制对象读取为ArrayBuff
+                f.readAsArrayBuffer(new Blob([head, body]));
+            } else {
+                log("Connection not opened.");
+            }
+        };
+        window.onload = connect;
+        </script>
+    </body>
+</html>

@@ -88,7 +88,7 @@ if __name__ == "__main__":
         curses.start_color()
         # 设置显示颜色为绿色
         curses.init_pair(1, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        #关闭屏幕回显
+        # 关闭屏幕回显
         curses.noecho()
         try:
             while True:

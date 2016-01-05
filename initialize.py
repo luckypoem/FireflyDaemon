@@ -40,6 +40,8 @@ Config().setDb(
 node = ServerConfig("net")
 node.set_log()
 node.set_net(20000)
+node.set_web(22000)
+node.set_ws(21000)
 node.set_remote("gate")
 Config().addServer(node)
 

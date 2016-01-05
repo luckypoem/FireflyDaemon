@@ -4,11 +4,12 @@ from twisted.internet import reactor
 from twisted.web import vhost
 from firefly.netconnect.protoc import LiberateFactory
 from firefly.web.delayrequest import DelaySite
-from firefly.distributed.root import PBRoot,BilateralFactory
+from firefly.distributed.root import PBRoot, BilateralFactory
 from firefly.distributed.node import RemoteObject
 from firefly.dbentrust.dbpool import dbpool
 from firefly.dbentrust.memclient import mclient
 from firefly.utils import services
+from websocket import WsFactory
 from config import Config
 from logobj import loogoo
 from globalobject import GlobalObject
@@ -21,6 +22,7 @@ class FFServer:
         self.netfactory = None              # net前端
         self.root = None                    # 分布式root节点
         self.webroot = None                 # http服务
+        self.ws = None
         self.remote = {}                    # remote节点
         self.master_remote = None
         self.db = None
@@ -53,6 +55,7 @@ class FFServer:
         netport = ser_cfg.get('netport')                     # 客户端连接
         webport = ser_cfg.get('webport')                     # http连接
         rootport = ser_cfg.get('rootport')                   # root节点配置
+        wsport = ser_cfg.get("wsport")                       # WebSocket端口
         self.remoteportlist = ser_cfg.get('remoteport',[])   # remote节点配置列表
         logpath = ser_cfg.get('log')                         # 日志
         hasdb = ser_cfg.get('db')                            # 数据库连接
@@ -73,7 +76,7 @@ class FFServer:
             self.netfactory = LiberateFactory()
             netservice = services.CommandService("netservice")
             self.netfactory.addServiceChannel(netservice)
-            reactor.listenTCP(netport,self.netfactory)
+            reactor.listenTCP(netport, self.netfactory)
             
         if webport:
             self.webroot = vhost.NameVirtualHost()
@@ -85,6 +88,12 @@ class FFServer:
             rootservice = services.Service("rootservice")
             self.root.addServiceChannel(rootservice)
             reactor.listenTCP(rootport, BilateralFactory(self.root))
+
+        if wsport:
+            self.ws = WsFactory(wsport)
+            wsservice = services.CommandService("wsservice")
+            self.ws.addServiceChannel(wsservice)
+            reactor.listenTCP(wsport, self.ws)
             
         for cnf in self.remoteportlist:
             rname = cnf.get('rootname')
@@ -106,13 +115,14 @@ class FFServer:
         if cpuid:
             affinity.set_process_affinity_mask(os.getpid(), cpuid)
 
-        GlobalObject().config(netfactory = self.netfactory, root=self.root, remote = self.remote)
+        GlobalObject().config(netfactory=self.netfactory, root=self.root, remote=self.remote)
+        GlobalObject().server = self
 
         if app:
             __import__(app)
         if mreload:
             _path_list = mreload.split(".")
-            GlobalObject().reloadmodule = __import__(mreload,fromlist=_path_list[:1])
+            GlobalObject().reloadmodule = __import__(mreload, fromlist=_path_list[:1])
         GlobalObject().remote_connect = self.remote_connect
         import admin
         
@@ -158,7 +168,5 @@ class FFServer:
         """
         reactor.addSystemEventTrigger('after', 'startup', self.startAfter)
         reactor.addSystemEventTrigger('before', 'shutdown', self.stopBefore)
-        GlobalObject().server = self
         reactor.run()
-        
-        
+
