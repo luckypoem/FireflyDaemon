@@ -32,7 +32,7 @@ twistd -y startmaster.py
 ```
 使用下面的命令将不会在后台运行，也不会创建`logs/master.log`日志(直接使用`Ctrl + C`退出程序即可自动保存数据):
 ```
-twisted -ny startmaster.py
+twistd -ny startmaster.py
 ```
 
 ## 停止服务
