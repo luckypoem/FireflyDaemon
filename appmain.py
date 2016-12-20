@@ -16,6 +16,7 @@ if __name__ == "__main__":
         name = args[1]
     else:
         raise ValueError
+    import initialize
     server = FFServer()
     server.set_name(name)
     server.set_config()
