@@ -1,5 +1,7 @@
 #FireflyDaemon
 
+fork from https://git.oschina.net/cbwfree/FireflyDaemon.git
+
 `暂未在Windows下测试, 目前只测试了Mac OS 和 Centos`
 
 本项目将firefly服务端改写为twisted的守护进程程序. 可以直接在后台运行, 不需要像以前一样使用`python startmaster.py &`的方式让程序在后台运行, 且不会像原来一样出现大量的日志写入异常. 另外还修改了master主进程创建各子进程的方式, 同样是使用的twisted的service, 在子进程异常退出后, ProcessMonitor 会自动重启退出的子进程
