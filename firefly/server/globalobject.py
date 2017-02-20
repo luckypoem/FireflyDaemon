@@ -1,4 +1,4 @@
-#coding:utf8
+# coding:utf8
 '''
 Created on 2013-8-2
 
@@ -8,13 +8,17 @@ from firefly.utils.singleton import Singleton
 
 
 class GlobalObject:
-    
+
     __metaclass__ = Singleton
-    
+
     def __init__(self):
-        self.netfactory = None#net前端
-        self.root = None#分布式root节点
-        self.remote = {}#remote节点
+        # netfactory: 前端节点，对应netport字段，监听和管理客户端连接。
+        self.netfactory = None
+        # root: 分布式根节点，对应字段rootport
+        self.root = None
+        # remote: 分布式子节点，对应字段remoteport
+        self.remote = {}
+        # db: 数据库节点
         self.db = None
         self.stophandler = None
         self.webroot = None
@@ -24,7 +28,7 @@ class GlobalObject:
         self.json_config = {}
         self.remote_map = {}
         self.server = None
-        
+
     def config(self, netfactory=None, root=None, remote=None, db=None):
         self.netfactory = netfactory
         self.root = root
@@ -53,14 +57,14 @@ def rootserviceHandle(target):
 class webserviceHandle:
     """这是一个修饰符对象
     """
-    
-    def __init__(self,url=None):
+
+    def __init__(self, url=None):
         """
         @param url: str http 访问的路径
         """
         self._url = url
-        
-    def __call__(self,cls):
+
+    def __call__(self, cls):
         """
         """
         from twisted.web.resource import Resource
@@ -72,10 +76,10 @@ class webserviceHandle:
         temp_res = None
         path_list = [path for path in path_list if path]
         patn_len = len(path_list)
-        for index,path in enumerate(path_list):
-            if index==0:
+        for index, path in enumerate(path_list):
+            if index == 0:
                 temp_res = GlobalObject().webroot
-            if index==patn_len-1:
+            if index == patn_len-1:
                 res = cls()
                 temp_res.putChild(path, res)
                 return
@@ -84,19 +88,18 @@ class webserviceHandle:
                 if not res:
                     res = Resource()
                     temp_res.putChild(path, res)
-            temp_res=res
+            temp_res = res
 
-    
+
 class remoteserviceHandle:
     """
     """
-    def __init__(self,remotename):
+    def __init__(self, remotename):
         """
         """
         self.remotename = remotename
-        
-    def __call__(self,target):
+
+    def __call__(self, target):
         """
         """
         GlobalObject().remote[self.remotename]._reference._service.mapTarget(target)
-        

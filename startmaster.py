@@ -6,12 +6,11 @@
 @create: 15/12/29 20:02
 """
 import sys
-import os 
+import os
 sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 from firefly.master.master import Master, MULTI_SERVER_MODE
 from twisted.application import service
 import initialize
-
 
 APP_NAME = "firefly"
 APP_SCRIPT = "appmain.py"

@@ -5,15 +5,18 @@ Master 管理进程
 @author: cbwfree
 @create: 15/12/29 20:02
 """
-import os, time, sys, signal
+import os
+import time
+import sys
+import signal
 from twisted.application import service, internet
 from twisted.internet import reactor
 from twisted.runner.procmon import ProcessMonitor
 from twisted.web import vhost
 from twisted.python import log
 from twisted.python.logfile import DailyLogFile
-from firefly.utils import  services
-from firefly.distributed.root import PBRoot,BilateralFactory
+from firefly.utils import services
+from firefly.distributed.root import PBRoot, BilateralFactory
 from firefly.server.globalobject import GlobalObject
 from firefly.web.delayrequest import DelaySite
 from firefly.server.config import Config
@@ -31,7 +34,7 @@ MASTER_SERVER_MODE = 3
 
 
 class Master:
-    
+
     def __init__(self):
         self.root = None
         self.web = None
@@ -50,7 +53,7 @@ class Master:
 
     def set_script(self, script):
         self.script = script
-        
+
     def create_master(self):
         """
         创建Master服务
@@ -106,7 +109,7 @@ class Master:
             app.setComponent(log.ILogObserver, log.FileLogObserver(DailyLogFile("logs/master.log", "")).emit)
         self.service.setServiceParent(app)
         GlobalObject().server = self
-            
+
     def startAfter(self):
         """
         启动之后

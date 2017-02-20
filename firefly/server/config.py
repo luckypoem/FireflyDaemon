@@ -1,7 +1,7 @@
 # coding: utf8
 """
 配置管理器
-@name: config.py 
+@name: config.py
 @author: cbwfree
 @create: 15/12/21 21:31
 """
@@ -165,7 +165,6 @@ class Config(object):
         :return:
         """
         return self._servers.get(name)
-
 
 
 class ServerConfig:

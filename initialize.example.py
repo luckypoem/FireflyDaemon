@@ -15,24 +15,24 @@ IS_BIND_CPU = False
 # =============   配置服务器信息   ================
 # 设置master信息
 Config().setMaster(
-    roothost="192.168.6.148",
+    roothost="127.0.0.1",
     rootport=9999,
     webport=9998
 )
 # 设置memcached缓存
 Config().setCache({
-    'urls': ["192.168.6.148:11211"],
+    'urls': ["127.0.0.1:11211"],
     'hostname': "firefly"
 })
 # 设置数据库连接
 Config().setDb(
-    db="firefly",
-    host="192.168.6.148",
+    db="db_name",
+    host="127.0.0.1",
     port=3306,
     user="root",
-    passwd="",
+    passwd="123456",
     charset="utf8",
-    conv={10: str, 246: float}
+    conv={10: str, 246: float}  # convert dates to strings, decimals to floats
 )
 
 # =============   设置服务器节点   ================

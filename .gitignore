@@ -8,3 +8,4 @@ twistd.pid
 env
 *.pyc
 status.json
+initialize.py
