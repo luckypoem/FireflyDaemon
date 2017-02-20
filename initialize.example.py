@@ -32,7 +32,7 @@ Config().setDb(
     user="root",
     passwd="123456",
     charset="utf8",
-    conv={10: str, 246: float}
+    conv={10: str, 246: float}  # convert dates to strings, decimals to floats
 )
 
 # =============   设置服务器节点   ================
@@ -77,5 +77,3 @@ for cpu_id in xrange(total):
     if IS_BIND_CPU and sys.platform in ('win32', 'linux2'):
         node.set_cpu(cpu_id + 1)
     Config().addServer(node)
-
-

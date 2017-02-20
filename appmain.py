@@ -3,16 +3,13 @@ import os
 import sys
 from firefly.server.server import FFServer
 
-reload(sys)
-sys.setdefaultencoding("utf-8")
-
 
 if os.name != 'nt' and os.name != 'posix':
     from twisted.internet import epollreactor
     epollreactor.install()
 
 
-if __name__=="__main__":
+if __name__ == "__main__":
     args = sys.argv
     name = None
     if len(args) > 1:

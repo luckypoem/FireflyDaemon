@@ -1,4 +1,4 @@
-#coding:utf8
+# coding:utf8
 '''
 Created on 2013-8-7
 
@@ -29,7 +29,7 @@ def masterwebHandle(cls):
 
 @masterwebHandle
 class stop(resource.Resource):
-    
+
     def render(self, request):
         """
         停止服务器
@@ -92,4 +92,3 @@ class ServerStatus(resource.Resource):
         else:
             result = buildConsoleResult(serverInfo)
         return result
-
